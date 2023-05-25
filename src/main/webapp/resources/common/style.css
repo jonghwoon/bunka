@@ -1,0 +1,28 @@
+@CHARSET "UTF-8";
+@font-face{font-family:'BebasNeue'; src:url('font/BebasNeue.otf')}
+
+/*	less 문법이라고 한다. 지금은 사용 못한다. 	 
+@myRed 		: #ff2c0c;
+@myYellow 	: #f5cd3f;
+@myBlue 	: #72bbff;
+@myCrimson	: #c83f42;
+@myPurple 	: #5937d3;
+@myNavy		: #001c26;
+@myGreen	: #83d35a;
+ */		
+ 
+.red	{color : #ff2c0c;}
+.yellow {color : #f5cd3f;}
+.blue 	{color : #72bbff;}
+.crimson{color : #c83f42;}
+.purple {color : #5937d3;}
+.navy	{color : #001c26;}
+.green	{color : #83d35a;}
+
+.center {text-align: conter;}
+.right 	{text-align: right;	}
+.left 	{text-align: left;	}
+ 
+.bottom_margin_20{	margin-bottom: 20px;}
+
+body	{	}

@@ -1,0 +1,186 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cobra.mvc.center.common.persistence.DAO"	>
+	
+	<resultMap id="myDTO" type="hashmap">
+		<discriminator javaType="String" 		column="rtype">
+			<case value="CENTER_USER"  			resultType="cobra.mvc.center.common.domain.MemberDTO"/>
+			<case value="CENTER_PDS"  			resultType="cobra.mvc.center.common.domain.FileDTO" />
+			
+			<!-- 개인 DTO 추가 요망 -->
+			<case value="ART_SHOW"  			resultType="cobra.mvc.center.art.domain.ShowDTO" />
+			<case value="ART_SHOW_RES" 			resultType="cobra.mvc.center.art.domain.ShowResDTO" />
+			<case value="ART_SHOW_MEMBER_RES"  	resultType="cobra.mvc.center.art.domain.ShowMemberResDTO" />
+			<case value="ART_SHOW_MEMBER_RES JOIN ART_SHOW USING(show_num)"  resultType="cobra.mvc.center.art.domain.ShowMemberResExDTO" />
+			<case value="CIRCLE_BOARD"   	resultType="cobra.mvc.center.circle.domain.CirboardDTO" />
+			<case value="CIRCLE_REBOARD"  	resultType="cobra.mvc.center.circle.domain.CirReBoardDTO" />
+			<case value="CENTER_CIRCLE"  	resultType="cobra.mvc.center.circle.domain.CirSearchDTO" />
+			<case value="CIRCLE_QBOARD"   	resultType="cobra.mvc.center.circle.domain.CirqboardDTO" />
+			<case value="CENTER_ROUNGE"   	resultType="cobra.mvc.center.circle.domain.CirroungeDTO" />
+			<case value="CIRCLE_VIEWCIRCLE" resultType="cobra.mvc.center.circle.domain.CircleInfoDTO" />
+			<case value="CIRCLE_REQUEST"  	resultType="cobra.mvc.center.circle.domain.CirRequestDTO" />
+		</discriminator>
+	</resultMap>
+
+	<!-- FILE IN/OUT -->	
+ 	<insert id="fileUpload" parameterType="cobra.mvc.center.common.domain.FileDTO">
+ 		INSERT INTO ${tableName} (filename, binary)
+ 		VALUES (#{filename}, #{binary})	
+ 	</insert>
+
+
+ 	<select id="fileDownload" parameterType="cobra.mvc.center.common.domain.FileDTO" resultMap="myDTO">
+ 		SELECT ${tableName}.*, '${tableName}' as rtype 
+ 		FROM 	${tableName} 
+ 		WHERE filename = #{filename}	
+ 	</select>
+ 	
+ 	<update id="fileUpdate" parameterType="cobra.mvc.center.common.domain.FileDTO">
+		<!-- UPDATE bms_booklist SET  id='bbbb' , isbn='s672530550' , count=count-1  WHERE   id='bbbb' AND isbn='s672530550'; -->
+ 		UPDATE	${tableName} 
+ 		SET 	binary= #{binary}
+ 		WHERE	filename = #{filename}
+ 	</update>
+ 	
+ 	<!-- FILE IN/OUT END -->
+ 	 		
+ 	<select id="mySelect" parameterType="cobra.mvc.center.common.domain.DTO" resultMap="myDTO">
+ 	<!-- <select id="mySelect" parameterType="cobra.mvc.center.common.domain.BoardDTO" resultType="cobra.mvc.center.common.domain.BoardDTO"> -->
+ 	 	WITH 	comTable AS ( SELECT * FROM (${tableName}) ) 	 	  									  
+		SELECT 	comTable.*, '${tableName}' as rtype 
+		FROM 	comTable <!-- spring_board --><!-- #{tableName} 안된다.  ${tableName} 으로 해야한다 제기랄! -->			 	 	
+	 	<!-- WHERE 1=1 --> 
+	 	<where>	 	 
+		 	<foreach collection="names" item="name" open="" separator="AND" >
+		 	<bind name="value" value="_parameter.getValueSQL(name)" />
+			<if test="value!=''">	${name} = ${value}	</if>
+			</foreach>
+		</where>		
+	</select>	
+	
+ 	<select id="myTest" parameterType="cobra.mvc.center.common.domain.DTO" resultMap="myDTO"> 				
+ 		WITH 	comTable AS ( SELECT * FROM (${tableName}) ) 
+ 		SELECT 	comTable.*, '${tableName}' as rtype  
+ 		FROM 	comTable
+ 		WHERE
+		<foreach collection="names" item="name" open="" separator="AND" >
+			<bind name="value" value="_parameter.getValueSQL(name)" />
+			<if test="value!=''"> ${name} = ${value}	</if>
+		</foreach>
+ 	</select>
+ 	 	
+ 	<select id="myCheck" parameterType="cobra.mvc.center.common.domain.DTO" resultMap="myDTO">
+		WITH 	comTable AS ( SELECT * FROM (${tableName}) ) 
+		SELECT 	comTable.*, '${tableName}' as rtype  
+		FROM	comTable <!-- spring_board --><!-- #{tableName} 안된다.  ${tableName} 으로 해야한다 제기랄! -->				 
+	 	<where>	 	 
+		 	<foreach collection="names" item="name" open="" separator="AND" >
+		 	<bind name="value" value="_parameter.getValueSQL(name)" />
+			<if test="value!=''"> ${name} = ${value}	</if>
+			</foreach>
+		</where>		
+	</select>
+	  
+  	<select id="mySearch" parameterType="cobra.mvc.center.common.domain.DTO" resultMap="myDTO">
+  		WITH 	comTable AS ( SELECT * FROM (${tableName}) ) 				
+ 		SELECT 	comTable.*, '${tableName}' as rtype  
+ 		FROM 	comTable <!-- myBatis 도 AND 중복에 관대하지 않다. --> 		
+ 		<where>		
+			<foreach collection="names" item="name" separator="AND" >
+				<bind name="value" value="_parameter.getValueSQL(name)" />
+				<if test="value!=''" > ${name} LIKE ('%'||${value}||'%') </if>
+			</foreach>
+		</where>
+	</select>
+
+	<!-- 정렬 기능을 더 넣으면 좋았을텐데... -->
+  	<select id="mySearchAndPaging" parameterType="hashmap" resultMap="myDTO"> 	
+ 		WITH 	comTable AS ( SELECT * FROM (${dto.tableName}) )
+ 		SELECT 	*	 					 
+ 		FROM(	
+	 			SELECT  comTable.*, '${dto.tableName}' as rtype , rownum AS rNum				
+			 	FROM comTable		 				 			 		
+		 		<where>	
+					<foreach collection="dto.names" item="name" separator="AND" >
+						<bind name="value" value="_parameter.dto.getValueSQL(name)" />
+						<if test="value!=''" > ${name} LIKE ('%'||${value}||'%') </if>
+					</foreach>
+				</where>
+			)
+			<!-- 오더가.. 데이터 나중이 가장 위로 올라올 것이므로 생각을 좀 해볼까... -->
+		<!-- WHERE -->
+		<if test="start!='' and start!=null">
+			<![CDATA[ WHERE rNum >= ${start} AND rNum <= ${end} ]]>
+		</if>				
+	</select>	
+	
+ 	<select id="sqlSelect" parameterType="hashmap" resultMap="myDTO">
+		<![CDATA[ ${sql} ]]>
+ 	</select>
+ 	
+ 	<insert id="sqlUpdate" parameterType="hashmap" >
+		<![CDATA[ ${sql} ]]>
+ 	</insert>
+ 	
+ 	<insert id="sqlInsert" parameterType="hashmap" >
+		<![CDATA[ ${sql} ]]>
+ 	</insert>
+ 	 
+ 	<insert id="myInsert" parameterType="cobra.mvc.center.common.domain.DTO" > 			 		 
+ 		INSERT INTO ${tableName} (
+ 			<foreach collection="names" item="name" separator=",">
+				<bind name="value" value="_parameter.getValueSQL(name)" />
+				 <if test="value!=''">	${name} </if>				 
+ 			</foreach>
+ 		)
+ 		VALUES (
+ 			<foreach collection="names" item="name" separator=",">
+				<bind name="value" value="_parameter.getValueSQL(name)" />
+				 <if test="value!=''">	${value} </if>				 
+ 			</foreach>
+ 		) 		 		
+ 	</insert>
+	
+  	<!-- 딜리트는 위험하므로 모든 키값을 요구한다. -->	 
+ 	<delete id="myDelete" parameterType="cobra.mvc.center.common.domain.DTO" >
+ 		<!-- DELETE bms_booklist WHERE   id='bbbb' AND isbn='s652530150'; -->
+ 		DELETE ${tableName} 		
+ 		<where>
+	 		<foreach collection="keyNames" item="name" separator="AND">
+				<bind name="value" value="_parameter.getValueSQL(name)" />
+				${name} = ${value}	<!-- delete 는 키값을 반드시 요구한다. -->
+			</foreach>
+ 		</where> 		
+ 	</delete>
+	
+ 	<!-- 업데이트는 위험하므로 모든 키값을 요구한다. -->
+	<update id="myUpdate" parameterType="cobra.mvc.center.common.domain.DTO" >
+		<!-- UPDATE bms_booklist SET  id='bbbb' , isbn='s672530550' , count=count-1  WHERE   id='bbbb' AND isbn='s672530550'; -->
+		UPDATE ${tableName}
+		<set>
+			<foreach collection="names" item="name" open="" separator=",">		
+				<bind name="value" value="_parameter.getValueSQL(name)" />
+				<if test="value!=''">	${name} = ${value}	</if>
+			</foreach>
+		</set>
+		<where>
+			<foreach collection="keyNames" item="name" open="" separator="AND" >				
+				<bind name="value" value="_parameter.getValueSQL(name)" />
+					${name} = ${value}
+			</foreach>
+		</where>
+	</update>
+
+ 	<select id="myCount" parameterType="cobra.mvc.center.common.domain.DTO" resultType= "Integer">
+ 		SELECT COUNT(*) 
+ 		FROM ${tableName} 
+		<where>
+			<foreach collection="names" item="name" open="" separator="AND">
+				<bind name="value" value="_parameter.getValueSQL(name)" />
+				<if test="value!=''">	${name} LIKE ('%'||${value}||'%') </if>
+			</foreach>
+		</where>
+ 	</select>
+
+</mapper>

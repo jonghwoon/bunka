@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cobra.mvc.center.item.persistence.reserv.ReservDAO">
+
+	<!-- 예약키 가져오기 -->
+	<select id="getReserv_key" parameterType="String" resultType="int">
+		SELECT COUNT(reserv_key)
+			FROM item_reservation
+			WHERE book_id = #{book_id}
+	</select>
+	
+	<!-- 예약상태 가져오기 -->
+	<select id="checkReserv" parameterType="String" resultType="cobra.mvc.center.item.domain.ReservDTO">
+		SELECT NVL(MAX(reserv_number), 0) as reserv_number, NVL(MAX(reserv_count), 0) as reserv_count
+			FROM item_reservation
+			WHERE book_id = #{book_id}
+	</select>
+	
+	<!-- 예약한 숫자 가져오기 -->
+	<select id="countReserv" parameterType="String" resultType="int">
+		SELECT COUNT(*)
+			FROM item_reservation
+			WHERE id = #{id}
+	</select>
+	
+	<!-- 예약한 책인지확인 -->
+	<select id="checkReservState" parameterType="String" resultType="int">
+		SELECT NVL(MAX(reserv_number), 0)
+			FROM item_reservation
+			WHERE book_id = #{book_id}
+	</select>
+	
+	<!-- 예약처리 -->
+	<insert id="reservation" parameterType="java.util.Map">
+		INSERT INTO item_reservation 
+		(reserv_key, reserv_number,	reserv_count, id, book_id)
+		
+		VALUES (reservation_seq.nextval, #{reserv_number} + 1,	#{reserv_count} + 1, #{id}, #{book_id})
+		
+	</insert>
+	
+	<!-- 예약목록 -->
+	<select id="reservList" parameterType="String" resultType="cobra.mvc.center.item.domain.ReservDTO">
+		SELECT * 
+		FROM item_reservation r, item_books b
+		WHERE r.book_id = b.book_id
+		AND id = #{id}
+	</select>
+	
+	<!-- 예약취소  -->
+	<delete id="reservCancel" parameterType="java.util.Map">
+		DELETE
+			FROM item_reservation
+			WHERE id = #{id}
+			AND book_id = #{book_id}
+	</delete>
+	
+	<!-- 예약 삭제 -->
+	<delete id="delReserv" parameterType="java.util.Map">
+		DELETE
+			FROM item_reservation
+			WHERE book_id = #{book_id}
+			AND id = #{id}
+	</delete>
+	
+	<!-- 예약 중복 확인 -->
+	<select id="preReserv" parameterType="java.util.Map" resultType="int">
+		SELECT COUNT(*) 
+			FROM item_reservation
+			WHERE book_id = #{book_id}
+			AND id = #{id}
+	</select>
+	
+	<!-- 예약순위 -->
+	<select id="checkQueue" parameterType="java.util.Map" resultType="String">
+		SELECT reserv_number
+			FROM item_reservation
+			WHERE book_id = #{book_id}
+			AND id = #{id}
+	</select>
+	
+	<!-- 예약순위 상승 -->
+	<update id="updateQueue" parameterType="String">
+		<selectKey>
+			SELECT reserv_number FROM item_reservation WHERE book_id = #{book_id}
+		</selectKey>
+		UPDATE item_reservation
+			SET reserv_number = reserv_number -1
+			WHERE book_id = #{book_id}
+	</update>
+	
+	<!-- 예약순위 0이하인 예약 삭제 -->
+	<delete id="delQueue" parameterType="String">
+		DELETE FROM item_reservation
+			WHERE book_id = #{book_id} 
+			AND reserv_number &lt;= 0
+	</delete>
+	
+</mapper>

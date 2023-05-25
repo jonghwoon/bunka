@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="cobra.mvc.center.sports.persistence.SportsDAO">
+	
+	<select id="useridselect" parameterType="String" resultType="cobra.mvc.center.sports.domain.UserDTO">
+		SELECT * FROM center_user WHERE id=#{id}
+	</select>
+	
+	<select id="user" parameterType="String" resultType="cobra.mvc.center.sports.domain.UserDTO">
+		SELECT * FROM center_user WHERE name=#{name}
+	</select>
+	
+	<insert id="fieldinsert" parameterType="java.util.Map">
+		INSERT INTO sports_field(idx, fieldname, amprice, pmprice, weamprice, wepmprice, ground, fsize, PR) 
+		VALUES(#{idx}, #{fieldname}, #{amprice}, #{pmprice}, #{weamprice}, #{wepmprice}, #{ground}, #{fsize}, #{PR})
+	</insert> 
+	
+	<select id="place" parameterType="String" resultType="cobra.mvc.center.sports.domain.FieldDTO">
+		SELECT * FROM sports_field WHERE idx=#{idx}
+	</select>
+	
+	<insert id="teaminsert" parameterType="java.util.Map">
+		INSERT INTO sports_team(id, team, leader, grade, place, lineup, win, lose, matching, yellow, PR)
+		VALUES(#{id}, #{team}, #{leader}, #{grade}, #{place}, #{lineup}, 0, 0, 0, 0, #{PR})
+	</insert>
+	
+	<select id="teamlist" resultType="cobra.mvc.center.sports.domain.TeamDTO">
+		SELECT * FROM sports_team
+	</select>
+	
+	<delete id="teamdelete" parameterType="String">
+		DELETE FROM sports_team WHERE team=#{team}
+	</delete>
+	
+	<select id="teamselect" parameterType="String" resultType="cobra.mvc.center.sports.domain.TeamDTO">
+		SELECT * FROM sports_team WHERE team=#{team}
+	</select>
+	
+	<update id="teamswitch" parameterType="java.util.Map">
+		UPDATE sports_team SET leader=#{leader}, grade=#{grade}, lineup=#{lineup}, yellow=#{yellow} WHERE team=#{team}
+	</update>
+	
+	<update id="fieldchange" parameterType="java.util.Map">
+		UPDATE sports_field SET amprice = #{amprice}, pmprice = #{pmprice}, weamprice = #{weamprice}, wepmprice = #{wepmprice}, ground=#{ground} WHERE idx=#{idx}
+	</update>
+	
+	<select id="fieldselect" parameterType="String" resultType="cobra.mvc.center.sports.domain.FieldDTO">
+		SELECT * FROM sports_field WHERE idx=#{idx}
+	</select>
+	
+	<select id="matchinglist" parameterType="java.util.Map" resultType="cobra.mvc.center.sports.domain.ReservationDTO">
+		SELECT * FROM sports_reservation WHERE grade=#{grade} AND matching=1 AND team != #{team}
+	</select>
+	
+	<insert id="matchinginsert" parameterType="java.util.Map">
+		INSERT INTO sports_matching VALUES(#{team}, #{id}, #{leader}, #{grade}, #{lineup}, #{matching}, #{date})
+	</insert>
+	
+	<delete id="matchingcancle" parameterType="java.util.Map">
+		DELETE FROM sports_matching WHERE team1=#{team1} AND team2=#{team2} AND day=#{day}
+	</delete>
+	
+	<insert id="blacklistadd" parameterType="java.util.Map">
+		INSERT INTO sports_blacklist(team, leader, content, chk) VALUES(#{team}, #{leader}, #{content}, #{chk})
+	</insert>
+	
+	<select id="playerinfo" parameterType="String" resultType="cobra.mvc.center.sports.domain.PlayerDTO">
+		SELECT * FROM sports_player WHERE team=#{team}
+	</select>
+	
+	<select id="playerselect" parameterType="String" resultType="cobra.mvc.center.sports.domain.PlayerDTO">
+		SELECT * FROM sports_player WHERE id=#{id}
+	</select>
+	
+	<insert id="playeradd" parameterType="java.util.Map">
+		INSERT INTO sports_player(id, place, team, age, position, address, ability, name, grade) 
+		VALUES(#{id}, #{place}, #{team}, #{age}, #{position}, #{address}, #{ability}, #{name}, #{grade})
+	</insert>
+	
+	<insert id="teamask" parameterType="java.util.Map">
+		INSERT INTO sports_teamask(id, place, team, age, position, address, ability, name, grade) 
+		VALUES(#{id}, #{place}, #{team}, #{age}, #{position}, #{address}, #{ability}, #{name}, #{grade})
+	</insert>
+		
+	<delete id="playerdelete" parameterType="String">
+		DELETE FROM sports_player WHERE id=#{id}
+	</delete>
+	
+	<insert id="reservation" parameterType="java.util.Map">
+		INSERT INTO sports_reservation(team, name, grade, fieldname, lineup, matching, time)
+		VALUES(#{team}, #{name}, #{grade}, #{fieldname}, #{lineup}, #{matching}, #{time})
+	</insert>
+	
+	<select id="reservationteam" parameterType="java.util.Map" resultType="cobra.mvc.center.sports.domain.ReservationDTO">
+		SELECT team FROM sports_reservation WHERE team=#{team}
+	</select>
+	
+	<select id="calendarchk" parameterType="String" resultType="cobra.mvc.center.sports.domain.ReservationDTO">
+		SELECT * FROM sports_reservation WHERE fieldname=#{fieldname}
+	</select>
+	
+	<insert id="yellowadd" parameterType="java.util.Map">
+		INSERT INTO sports_yellow(team, leader, content, date) VALUES(#{team}, #{leader}, #{content}, sysdate)
+	</insert>
+	
+	<select id="blacklist" resultType="cobra.mvc.center.sports.domain.BlacklistDTO">
+		SELECT * FROM sports_blacklist WHERE chk=#{chk}
+	</select>
+	
+	<select id="clubchk" parameterType="String" resultType="int">
+		SELECT count(*) FROM sports_club WHERE id=#{id} 
+	</select>
+	
+	<select id="idchk" parameterType="String" resultType="int">
+		SELECT count(*) FROM center_user WHERE id=#{id}
+	</select>
+	
+	<select id="passwdchk" parameterType="java.util.Map" resultType="int">
+		SELECT count(*) FROM center_user WHERE id=#{id} AND passwd=#{passwd}
+	</select>
+	
+	<insert id="clubadd" parameterType="java.util.Map">
+		INSERT INTO sports_club(id, passwd, call, address, name) VALUES(#{id}, #{passwd}, #{call}, #{address}, #{name})
+	</insert>
+	
+	<select id="clubinfo" parameterType="String" resultType="cobra.mvc.center.sports.domain.ClubDTO">
+		SELECT * FROM sports_club WHERE id=#{id}
+	</select>
+	
+	<select id="reservationchk" parameterType="String" resultType="cobra.mvc.center.sports.domain.ReservationDTO">
+		SELECT * FROM sports_reservation WHERE team=#{team} 
+	</select>
+	
+	<delete id="rescancle" parameterType="java.util.Map">
+		DELETE FROM sports_reservation WHERE team=#{team} AND time=#{time} AND fieldname=#{fieldname}
+	</delete>
+	
+	<select id="teamidselect" parameterType="String" resultType="cobra.mvc.center.sports.domain.TeamDTO">
+		SELECT * FROM sports_team WHERE id=#{id}
+	</select>
+	
+	<select id="teamsearch" parameterType="String" resultType="cobra.mvc.center.sports.domain.TeamDTO">
+		SELECT * FROM sports_team WHERE team=#{team}
+	</select>
+	
+	<!-- <update id="playerupdate" parameterType="String">
+		UPDATE sports_player SET team='없음' WHERE team=#{team}
+	</update> -->
+	
+	<delete id="playerupdate" parameterType="String">
+		DELETE FROM sports_player WHERE team=#{team}
+	</delete>
+	
+	<delete id="reservationdelete" parameterType="String">
+		DELETE FROM sports_reservation WHERE team=#{team} 
+	</delete>
+	
+	<insert id="matchingask" parameterType="java.util.Map">
+		INSERT INTO sports_matching(fieldname, team1, team2, day, times)
+		VALUES(#{fieldname}, #{team1}, #{team2}, #{day}, #{times})
+	</insert>
+	
+	<select id="matchingcom" resultType="cobra.mvc.center.sports.domain.MatchingDTO">
+		SELECT * FROM sports_matching
+	</select>
+	
+	<update id="reservationupdate" parameterType="java.util.Map">
+		UPDATE sports_reservation SET matching='0' WHERE team=#{team1} AND time=#{time}
+	</update>
+	
+	<delete id="blacklistdel" parameterType="java.util.Map">
+		DELETE SPORTS_BLACKLIST WHERE team=#{team}
+	</delete>
+	
+	<select id="teamasklist" parameterType="String" resultType="cobra.mvc.center.sports.domain.TeamaskDTO">
+		SELECT * FROM sports_teamask WHERE team=#{team}
+	</select>
+	
+	<insert id="askok" parameterType="java.util.Map">
+		INSERT INTO sports_player(id, place, team, age, position, address, ability, name, grade) 
+		VALUES(#{id}, #{place}, #{team}, #{age}, #{position}, #{address}, #{ability}, #{name}, #{grade})
+	</insert>
+	
+	<delete id="askdelete" parameterType="String">
+		DELETE sports_teamask WHERE id=#{id}
+	</delete>
+	
+	<select id="blacklistadmin" parameterType="String" resultType="cobra.mvc.center.sports.domain.BlacklistDTO">
+		SELECT * FROM sports_blacklist WHERE chk=#{chk}
+	</select>
+	
+	<update id="blacklistupdate" parameterType="java.util.Map">
+		UPDATE sports_blacklist SET chk='1' WHERE team=#{team}
+	</update>
+	
+	<select id="asklist" parameterType="String" resultType="cobra.mvc.center.sports.domain.TeamaskDTO">
+		SELECT * FROM sports_teamask WHERE id=#{id}
+	</select>
+	
+	<update id="rematching" parameterType="java.util.Map">
+		UPDATE sports_reservation SET matching='1'
+	</update>
+	
+	<select id="dataidselect" parameterType="String" resultType="cobra.mvc.center.sports.domain.GraphDTO">
+		SELECT * FROM sports_graph WHERE id=#{id}
+	</select>
+</mapper>

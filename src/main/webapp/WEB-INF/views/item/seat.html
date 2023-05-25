@@ -1,0 +1,170 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+    <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+    <html>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script src="http://code.jquery.com/jquery.js"></script>
+    <script defer src="http://jsfiddle.net/js/jsfiddle-post.js"></script>
+    <script src="../../../resources/js/bootstrap.js"></script>
+    <script src="../../../resources/js/moment-with-locales.js"></script>
+    <script src="../../../resources/js/bootstrap-datepicker.js"></script>
+    <script src="../../../resources/js/bootstrap-datepicker.kr.js"></script>
+    <link type="text/css" rel="stylesheet" href="../../../resources/css/bootstrap.min.css">
+    <link type="text/css" rel="stylesheet" href="../../../resources/css/datepicker3.css">
+
+    <style>
+        .wrap {
+            width: 100%;
+            overflow: hidden;
+        }
+        
+        ul,
+        ol {
+            list-style: none;
+            float: left;
+            overflow: hidden;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .colsHead {
+            width: 100%;
+            padding-left: 30px;
+        }
+        
+        .rowsHead {
+            width: 30px;
+        }
+        
+        li {
+            width: 30px;
+            height: 30px;
+            border: 1px;
+            text-align: center;
+            line-height: 30px;
+        }
+        
+        .seat li {
+            float: left;
+            border: 1px solid skyblue;
+        }
+        
+        .colsHead li {
+            float: left;
+            border: 1px solid white;
+        }
+        
+        .rowsHead li {
+            border: 1px solid white;
+        }
+        
+        .reserve {
+            background-color: orange;
+        }
+    </style>
+
+    <script type="text/javascript">
+        $(window).load(function() {
+            var $cols = $('input[name=cols]'),
+                $rows = $('input[name=rows]'),
+                $result = $('.result'),
+                $seat = $('.wrap .seat'),
+                $colsHead = $('.wrap .colsHead'),
+                $rowsHead = $('.wrap .rowsHead'),
+                colsNum = 0,
+                rowsNum = 0;
+
+            var updateView = function() {
+                var makeTag = '',
+                    i = 1,
+                    leng = 0;
+
+                colsNum = parseInt($cols.val() || 0, 10);
+                rowsNum = parseInt($rows.val() || 0, 10);
+
+                for (i = 1, leng = colsNum * rowsNum; i <= leng; i++) {
+                    if (i % colsNum === 1) {
+                        makeTag += "<li style='clear:both;'></li>";
+                    } else {
+                        makeTag += "<li></li>";
+                    }
+                }
+                $seat.html(makeTag);
+
+                for (makeTag = '', i = 1, leng = colsNum; i <= leng; i++) {
+                    makeTag += '<li>' + i + '</li>';
+                }
+                $colsHead.html(makeTag);
+
+                for (makeTag = '', i = 65, leng = 65 + rowsNum; i < leng; i++) {
+                    makeTag += '<li>' + String.fromCharCode(i) + '</li>';
+                }
+                $rowsHead.html(makeTag);
+
+                $result.html('없음');
+            };
+
+            var getSeatName = function(index) {
+                var colsIndex = (index % colsNum) + 1,
+                    rowsIndex = Math.ceil((index + 1) / colsNum) - 1,
+                    rowsName = String.fromCharCode((65 + rowsIndex));
+
+                return rowsName + '열 ' + colsIndex + '번째';
+            };
+
+            $('fieldset').on('input', 'input', function() {
+                updateView();
+                return false;
+            });
+
+            $seat.on('click', 'li', function() {
+                var $this = $(this),
+                    index = $this.index();
+
+                $this.toggleClass('reserve');
+                $result.html(getSeatName(index));
+                //alert( '[' + index + '] ' + getSeatName(index) );
+            });
+
+            updateView();
+        });
+    </script>
+
+    <head>
+        <title></title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+    </head>
+
+    <body>
+        <fieldset>
+            <legend>좌석 설정</legend>
+            <p><label>행 : <input type="number" name="cols" value="4" /></label></p>
+            <p><label>열 : <input type="number" name="rows" value="4" /></label></p>
+        </fieldset>
+
+        <hr />
+
+        <fieldset>
+            <legend>클릭한 좌석명</legend>
+            <p class="result">없음</p>
+        </fieldset>
+        <form>
+            <div class="wrap">
+                <ul class="colsHead"></ul>
+                <ul class="rowsHead"></ul>
+                <ol class="seat"></ol>
+            </div>
+
+            <!-- Button -->
+            <div class="form-group">
+                <label class="col-md-3 control-label" for="submit"></label>
+                <div class="col-md-8 text-center">
+                    <input type="submit" id="submit" name="submit" class="btn btn-primary" value="이용신청">
+                    <button id="end" name="end" class="btn btn-danger">이용종료</button>
+                </div>
+            </div>
+        </form>
+    </body>
+
+    </html>

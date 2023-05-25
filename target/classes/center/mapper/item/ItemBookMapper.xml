@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="cobra.mvc.center.item.persistence.book.BookDAO"	>
+	<!-- 도서 등록 -->
+	<insert id="insertbook" parameterType="cobra.mvc.center.item.domain.BookDTO">
+		INSERT INTO item_books
+					(book_id, book_isbn, book_title, book_origin,
+					book_author, book_trans, book_publishdate, book_incomedate,
+					book_categorybig, book_categorymid, book_library, book_value, 
+					book_publisher, book_keyword, book_index, book_img)
+					  
+			 VALUES (book_seq.nextval || #{book_id}, #{book_isbn}, #{book_title}, #{book_origin}, 
+			 		 #{book_author}, #{book_trans}, #{book_publishdate}, #{book_incomedate}, 
+			 		 #{book_categorybig}, #{book_categorymid}, #{book_library}, #{book_value}, 
+					 #{book_publisher}, #{book_keyword}, #{book_index}, #{book_img})
+	</insert>
+	
+	<!-- 도서 수정 -->
+	<update id="updateBook" parameterType="cobra.mvc.center.item.domain.BookDTO">
+		UPDATE item_books
+			SET book_isbn 	= #{book_isbn},
+				book_title 	= #{book_title},
+				book_origin = #{book_origin},
+				book_author = #{book_author},
+				book_trans 	= #{book_trans},
+				book_publishdate = #{book_publishdate},
+				book_incomedate = #{book_incomedate},
+				book_categorybig = #{book_categorybig},
+				book_categorymid = #{book_categorymid},
+				book_publisher = #{book_publisher},
+				book_keyword = #{book_keyword},
+				book_index = #{book_index}
+				
+				WHERE book_id = #{book_id}
+	</update>
+	
+	<!-- 도서 갯수 구하기 -->
+	<select id="getBookCount" resultType="int">
+		SELECT count(*) FROM item_books
+	</select>
+	
+	<!-- 도서목록 -->
+	<select id="getBooks" parameterType="java.util.Map" resultType="cobra.mvc.center.item.domain.BookDTO">
+		SELECT * FROM (SELECT 
+							book_id, book_isbn, book_title, book_origin,
+							book_author, book_trans, book_publishdate, book_incomedate,
+							book_categorybig, book_categorymid, book_library, book_value, 
+							book_publisher, book_keyword, book_index, book_img, catbig, catmid, rownum rNum 
+        
+        FROM (SELECT 
+        					b.book_id, b.book_isbn, b.book_title, b.book_origin,
+							b.book_author, b.book_trans, b.book_publishdate, b.book_incomedate,
+							b.book_categorybig, b.book_categorymid, b.book_library, b.book_value, 
+							b.book_publisher, b.book_keyword, b.book_index, b.book_img, g.book_categoryname_b as catbig, m.book_categoryname_m as catmid
+        FROM
+        item_books b, item_book_categorybig g, item_book_categorymid m
+        WHERE b.book_categorybig = g.book_categorybig
+        and m.book_categorymid = b.book_categorymid
+        ORDER by  book_incomedate DESC
+        )
+        )
+        
+        WHERE rNum &gt;= #{start} AND rNum &lt;= #{end}
+	</select>
+	
+	<!-- 도서 상세정보 -->
+	<select id="getBook" parameterType="String" resultType="cobra.mvc.center.item.domain.BookDTO">
+			SELECT 
+							book_id, book_isbn, book_title, book_origin,
+							book_author, book_trans, book_publishdate, book_incomedate,
+							book_categorybig, book_categorymid, book_library, book_value, 
+							book_publisher, book_keyword, book_index, book_img, catbig, catmid  
+        
+        	FROM (SELECT 
+        					b.book_id, b.book_isbn, b.book_title, b.book_origin,
+							b.book_author, b.book_trans, b.book_publishdate, b.book_incomedate,
+							b.book_categorybig, b.book_categorymid, b.book_library, b.book_value, 
+							b.book_publisher, b.book_keyword, b.book_index, b.book_img, g.book_categoryname_b as catbig, m.book_categoryname_m as catmid
+	        FROM
+	        item_books b, item_book_categorybig g, item_book_categorymid m
+	        WHERE b.book_categorybig = g.book_categorybig
+	        and m.book_categorymid = b.book_categorymid)
+	        
+	        WHERE book_id = #{book_id}
+        
+	</select>
+	
+	<!-- 도서 삭제 -->
+	<delete id="deleteBook" parameterType="String">
+		DELETE FROM item_books
+			WHERE book_id = #{book_id}
+	</delete>
+	
+</mapper>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+
+<mapper namespace="cobra.mvc.center.art.persistence.DAO_art"	>
+	 			    
+	<resultMap id="myDTO" type="hashmap">
+		<discriminator javaType="String" column="rtype">
+			<case value="CENTER_USER" resultType="cobra.mvc.center.common.domain.MemberDTO" />			 
+			<case value="ART_SHOW" 	resultType="cobra.mvc.center.art.domain.ShowDTO" />			
+									
+			<!-- 이후 DTO 추가 요망 -->						
+		</discriminator>
+	</resultMap>
+		 
+	<select id="showFind" parameterType="cobra.mvc.center.common.domain.DTO" resultMap="myDTO">						 
+ 		SELECT ${tableName}.*, '${tableName}' as rtype
+ 		FROM ${tableName} 		 				  
+		<where>	
+			
+			<if test="day_start!=null"> 	
+				day_start        		<![CDATA[ <= ]]>	TO_DATE(#{day_start},'YY-MM-DD')
+			  	AND day_start+day_end	<![CDATA[ >= ]]>	TO_DATE(#{day_start},'YY-MM-DD')
+		  	</if>
+		  	
+		  	<if test="day_start==null">
+		  		day_start        		<![CDATA[ <= ]]>	SYSDATE
+			  	AND day_start+day_end	<![CDATA[ >= ]]>	SYSDATE
+		  	</if>		  	
+		  	 		  	
+		  	<if test="item!=null"> 		AND item like  		('%${item}%')		</if>
+		  	<if test="place!=null"> 	AND place like	 	('%${place}%')		</if>
+		  	<if test="day_week!=null"> 	AND day_week like 	('%${day_week}%')	</if>
+		  	
+		</where>				
+	</select>
+	 
+<!-- 
+  	<select id="mySearch" parameterType="cobra.mvc.center.common.domain.DTO" resultMap="myDTO">
+ 		SELECT ${tableName}.*, '${tableName}' as rtype
+ 		  
+ 		FROM ${tableName} myBatis 도 AND 중복에 관대하지 않다. 		
+ 		<where>		
+			<foreach collection="names" item="name" separator="AND" >
+				<bind name="value" value="_parameter.getValueSQL(name)" />
+				<if test="value!=''" > ${name} LIKE ('%'||${value}||'%') </if>
+			</foreach>
+		</where>
+	</select>
+ -->
+</mapper>

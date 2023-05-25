@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cobra.mvc.center.item.persistence.rend.RendDAO">
+
+	<!-- 빌린 도서숫자 -->
+	<select id="getRendCount" parameterType="String" resultType="int">
+		SELECT COUNT(*) 
+			FROM item_rend
+			WHERE id = #{id}
+	</select>
+
+	<!-- 책빌리기 -->
+	<update id="rendBook" parameterType="java.util.Map">
+		UPDATE item_rend 
+		
+			SET rend_state = 1, 
+				rend_value = 1,  
+				rend_start = SYSDATE,
+				rend_end   = SYSDATE + 7,
+				rend_count = rend_count + 1,
+				id		   = #{id}
+		
+			 WHERE rend_key = #{rend_key}		 
+	</update>
+	
+	<!-- 빌린책상세 -->
+	<select id="getDetail" parameterType="String" resultType="cobra.mvc.center.item.domain.BookDTO">
+		SELECT 
+							book_id, book_isbn, book_title, book_origin,
+							book_author, book_trans, book_publishdate, book_incomedate,
+							book_categorybig, book_categorymid, book_library, book_value, 
+							book_publisher, book_keyword, book_index, book_img, catbig, catmid  
+        
+        	FROM (SELECT 
+        					b.book_id, b.book_isbn, b.book_title, b.book_origin,
+							b.book_author, b.book_trans, b.book_publishdate, b.book_incomedate,
+							b.book_categorybig, b.book_categorymid, b.book_library, b.book_value, 
+							b.book_publisher, b.book_keyword, b.book_index, b.book_img, 
+							g.book_categoryname_b as catbig, m.book_categoryname_m as catmid
+	        FROM
+	        item_books b, item_book_categorybig g, item_book_categorymid m
+	        WHERE b.book_categorybig = g.book_categorybig
+	        and m.book_categorymid = b.book_categorymid)
+	        
+	        WHERE book_id = #{book_id}
+	</select>
+	
+	<!-- 대여상태 확인 -->
+	<select id="checkRentState" parameterType="String" resultType="int">
+		SELECT rend_state FROM item_REND
+		WHERE book_id = #{book_id}
+	</select>
+	
+	<!-- 유저 페널티확인 -->
+	<select id="checkPenalty" parameterType="String" resultType="cobra.mvc.center.item.domain.MemberDTO">
+		SELECT user_penalty, user_penaltydate
+		
+		FROM	item_member
+		WHERE id = #{id} 
+		
+	</select>
+	
+	<!-- 페널티 삭제 -->
+	<update id="delPenalty" parameterType="String">
+		UPDATE item_member
+		
+			SET user_penalty = 0,
+				user_penaltydate = null
+				
+				WHERE id = #{id}
+	</update>
+	
+	<!-- 도서관 등록확인 -->
+	<select id="checkUserReg" parameterType="String" resultType="String">
+		SELECT user_reg
+			FROM (SELECT * 
+					FROM center_user u
+					LEFT OUTER JOIN item_member m
+					ON u.id = m.id
+					WHERE u.id = #{id})
+	</select>
+	
+	<!-- 유저 등록 -->
+	<insert id="register" parameterType="String">
+		INSERT INTO item_member(id, user_penalty, user_reg)
+		VALUES (#{id}, 0, 1) 
+	</insert>
+	
+	<!-- 대여도서목록 -->
+	<select id="getRendList" parameterType="String" resultType="cobra.mvc.center.item.domain.RendDTO">
+		SELECT *
+			FROM item_rend r, item_books b
+			WHERE b.book_id = r.book_id
+			AND r.id = #{id}
+	</select>
+	
+	<!-- 대여도서상세 -->
+	<select id="getRendDetail" parameterType="String" resultType="cobra.mvc.center.item.domain.RendDTO">
+		SELECT *
+			FROM item_rend r, item_books b
+			WHERE b.book_id = r.book_id
+			AND b.book_id = #{book_id}
+	</select>
+	
+	<!-- 이용제한설정 -->
+	<update id="setPenalty" parameterType="String">
+		UPDATE item_member
+			
+			SET user_penalty = -1,
+				user_penaltydate = sysdate + 7
+				WHERE id = #{id}
+	</update>
+	
+	<!-- 반납처리 -->
+	<update id="returnBook" parameterType="String">
+		UPDATE item_rend
+		
+			SET rend_state = 0,
+				rend_value = 0,
+				rend_start = null,
+				rend_end   = null,
+				rend_return= sysdate,
+				id		   = null
+				
+				WHERE book_id = #{book_id}
+	</update>
+	
+	<!-- 대여키가져오기 -->
+	<select id="getRend_key" parameterType="String" resultType="int">
+		SELECT rend_key 
+			FROM item_REND
+				WHERE book_id = #{book_id}
+	</select>
+
+</mapper>
